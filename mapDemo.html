@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Demo of Plotly map</title>
+    <style>
+
+    </style>
+</head>
+<body>
+    <input type="file" name="inputFile"
+           id="inputFile">
+    <br>
+    <button onclick="graph()">graph</button>
+    <div id='graph'></div>
+    <div id='inputField' style="display: none" class="input">
+        <p id='inputDescription'></p>
+        <label>
+            <textarea cols="50"></textarea>
+        </label>
+        <button id='acceptInput'>Ok</button>
+        <button id='cancelInput' onclick="resetInputField()">Cancel</button>
+    </div>
+    <button id="calibrateTrigger" onclick="calibrate()">calibrate</button>
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+</body>
+</html>
+
+<script>
+let Tester = document.getElementById('graph');
+Tester.addEventListener('click', handleDatapointClick, false);
+
+let graphCoordinates = [];
+let gpsCoordinates = [];
+let currentPoint = [];
+
+const numPoints = 50;
+let x = [0,500];
+let y = [0,500];
+let size = Array.from({length:numPoints}, () => ((Math.random()*20)+5).toFixed(4)); // circle range
+let texts = x.map((range) => 'building name: '+ range.toString()+'kw');
+
+let backTrace = createBackgroundGrid();
+let trace1 = {
+    x: x,
+    y: y,
+    type: 'scatter',
+    mode: 'markers',
+    marker: {
+        color: 'rgb(17, 157, 255)',
+        opacity: 0.5,
+        size: 10,
+        line: {
+            color: 'rgb(231, 99, 250)',
+            width: 1 //border width of circle
+        }
+    },
+    text: texts,
+    opacity: 1,
+    showlegend: false
+};
+data = [trace1,backTrace];
+let source = '';
+let inputFile = document.getElementById('inputFile');
+inputFile.addEventListener('change', getURI, false);
+
+function notifyLoadComplete() {
+    window.alert('Map load complete.');
+}
+
+function getURI() {
+    let fileReader = new FileReader();
+    fileReader.onload = function () {
+        source = fileReader.result;
+    };
+    fileReader.readAsText(this.files[0]);
+    notifyLoadComplete();
+}
+
+function graph() {
+    let layout = { //todo: change x and y axis to be the same unit length
+        width: 1000,
+        height: 1000,
+        xaxis: {
+            range: [0, 500], //range of displayed graph
+            showgrid: false, // hide grid lines in graph
+            zeroline: true,
+            showticklabels: false // hide numbers on zeroline
+        },
+        yaxis: {
+            range: [0, 500],
+            showgrid: false,
+            zeroline: true,
+            showticklabels: false,
+            scaleanchor:'x',
+        },
+        images: [{
+            layer: 'below',
+            source: source,
+            xref: 'x',
+            yref: 'y',
+            x: 0,
+            y: 0,
+            sizex: 500,
+            sizey: 500,
+            xanchor: 'left',
+            yanchor: 'bottom',
+            sizing: 'contain',
+            opacity: 1,
+        }],
+    };
+    Plotly.newPlot(Tester, data, layout);
+    Tester.on('plotly_click', getGraphCoordinates);
+}
+
+function createBackgroundGrid() {
+    let x = [];
+    let y = [];
+    for (let i = 0; i < 500; i = i + 0.1) {
+        x.push(i);
+    }
+    for (let j = 0; j < 500; j = j + 0.1) {
+        y.push(j);
+    }
+    let z = [];
+    for (let j = 0; j < y.length; j++) {
+        let temp = [];
+        for (let k = 0; k < x.length; k++) {
+            temp.push(0);
+        }
+        z.push(temp);
+    }
+
+    let trace = {
+        x: x,
+        y: y,
+        z: z,
+        type: 'heatmap',
+        colorscale: [['0.0', 'rgba(0,0,0,0.97)'], ['1.0', 'rgb(255, 255, 255, 0.5)']],
+        xgap: 1,
+        ygap: 1,
+        hoverinfo: 'x',
+        showscale: false
+    };
+    return trace;
+}
+
+function showInputField(message) {
+    let inputField = document.getElementById('inputField');
+    inputField.style.display = "block";
+    let description = document.getElementById('inputDescription');
+    description.innerText = message;
+}
+
+function validateCoordinateInput(input) {
+    return input.indexOf(',') !== -1;
+}
+
+function resetInputField() {
+    let inputField = document.getElementById('inputField');
+    inputField.style.display = "none";
+    let textarea = document.querySelector('textarea');
+    textarea.value = '';
+}
+
+function printCoordinates() {
+    window.alert('Entered points: \ngps coordinates: ' + gpsCoordinates + '\ngraph coordinates: ' + graphCoordinates + '\nPress Calibrate when ready.');
+}
+
+function addPointToGraph() {
+    // TODO: add code to add actual point to graph;
+    let name = window.prompt('Building Name','main');
+}
+
+function handleCoordinateInput() {
+    let input = document.querySelector('textarea').value;
+    if (validateCoordinateInput(input)) {
+        let coordinates = input.split(',');
+        coordinates.map((string) => parseFloat(string));
+        gpsCoordinates.push(coordinates);
+        graphCoordinates.push(currentPoint);
+        resetInputField();
+        printCoordinates();
+        // addPointToGraph();
+    } else {
+        window.alert('invalid input');
+    }
+}
+
+function handleDatapointClick() {
+    showInputField('Enter GPS coordinates for this point in the format: latitude,longitude');
+    let button = document.getElementById('acceptInput');
+    button.addEventListener('click', handleCoordinateInput, false);
+}
+
+function getGraphCoordinates(data) {
+    currentPoint = [data.points[0].x.toFixed(6),data.points[0].y.toFixed(6)];
+    window.alert('x: ' + data.points[0].x.toFixed(6) + '; y: ' + data.points[0].y.toFixed(6) +
+        '\nPlease enter the coordinates for this point below to continue.');
+}
+
+function calibrate() {
+    const oppositeCornerY = 459;
+    const oppositeCornerX = 500;
+    const latitudeIndex = 0;
+    const longitudeIndex = 1;
+    const xIndex = 0;
+    const yIndex = 1;
+    let deltaLatitude = gpsCoordinates[0][latitudeIndex] - gpsCoordinates[1][latitudeIndex];
+    let deltaYInUnits = graphCoordinates[0][yIndex] - graphCoordinates[1][yIndex];
+    let degreePerUnitY = deltaLatitude/deltaYInUnits;
+
+    let deltaLongitude = gpsCoordinates[0][longitudeIndex] - gpsCoordinates[1][longitudeIndex];
+    let deltaXInUnits = graphCoordinates[0][xIndex] - graphCoordinates[1][xIndex];
+    let degreePerUnitX = deltaLongitude/deltaXInUnits;
+
+    let originLatitude = gpsCoordinates[0][latitudeIndex] - degreePerUnitY * graphCoordinates[0][yIndex];
+    let originLongitude = gpsCoordinates[0][longitudeIndex] - degreePerUnitX * graphCoordinates[0][xIndex];
+    let originCoordinate = [originLatitude, originLongitude];
+
+    let oppositeCornerLatitude = originLatitude + oppositeCornerY * degreePerUnitY;
+    let oppositeCornerLongitude = originLongitude + oppositeCornerX * degreePerUnitX;
+    let oppositeCornerCoordinate = [oppositeCornerLatitude, oppositeCornerLongitude];
+
+    let body = document.querySelector('body');
+    let calibrationData = 'Calibration complete. Origin\'s GPS coordinate: ' + originCoordinate + '\nOpposite corner\'s GPS coordinate: ' + oppositeCornerCoordinate;
+    let textNode = document.createTextNode(calibrationData);
+    let node = document.createElement('p');
+    node.appendChild(textNode);
+    body.appendChild(node);
+    // window.alert('Calibration complete. Origin\'s GPS coordinate: ' + originCoordinate + '\nOpposite corner\'s GPS coordinate: ' + oppositeCornerCoordinate);
+}
+
+</script>
