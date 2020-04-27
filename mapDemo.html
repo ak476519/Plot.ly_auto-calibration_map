@@ -168,8 +168,8 @@ const longitudeIndex = 1;
 const xIndex = 0;
 const yIndex = 1;
 
-function printCoordinates() {
-    window.alert('Entered points: \ngps coordinates: ' + gpsCoordinates + '\ngraph coordinates: ' + graphCoordinates + '\nPress Calibrate when ready.');
+function printCoordinates(numPoints) {
+    window.alert('Number of data points: ' + numPoints + '\ngps coordinates: ' + gpsCoordinates + '\ngraph coordinates: ' + graphCoordinates + '\nPress Calibrate when ready.');
 }
 
 function addPointToGraph() {
@@ -185,7 +185,7 @@ function handleCoordinateInput() {
         gpsCoordinates.push(coordinates);
         graphCoordinates.push(currentPoint);
         resetInputField();
-        printCoordinates();
+        printCoordinates(gpsCoordinates.length);
         // addPointToGraph();
     } else {
         window.alert('invalid input');
@@ -201,7 +201,7 @@ function handleDatapointClick() {
 function getGraphCoordinates(data) {
     currentPoint = [data.points[0].x.toFixed(6),data.points[0].y.toFixed(6)];
     window.alert('x: ' + data.points[0].x.toFixed(6) + '; y: ' + data.points[0].y.toFixed(6) +
-        '\nPlease enter the coordinates for this point below to continue.');
+        '\nPlease enter GPS coordinates for this point below to continue.');
 }
 
 function printCalibrationMessage(originCoordinate, oppositeCornerCoordinate) {
