@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Demo of Plotly map</title>
+    <title>Demo of Plot.ly map</title>
     <style>
 
     </style>
@@ -35,10 +35,9 @@ let gpsCoordinates = [];
 let currentPoint = [];
 
 const numPoints = 50;
-let x = [0,500];
-let y = [0,500];
-let size = Array.from({length:numPoints}, () => ((Math.random()*20)+5).toFixed(4)); // circle range
-let texts = x.map((range) => 'building name: '+ range.toString()+'kw');
+let x = [500];
+let y = [500];
+let texts = ['placeHolder'];
 
 let backTrace = createBackgroundGrid();
 let trace1 = {
@@ -47,19 +46,15 @@ let trace1 = {
     type: 'scatter',
     mode: 'markers',
     marker: {
-        color: 'rgb(17, 157, 255)',
+        color: 'rgb(7,110,180)',
         opacity: 0.5,
-        size: 10,
-        line: {
-            color: 'rgb(231, 99, 250)',
-            width: 1 //border width of circle
-        }
+        size: 6,
     },
     text: texts,
     opacity: 1,
     showlegend: false
 };
-data = [trace1,backTrace];
+data = [backTrace,trace1];
 let source = '';
 let inputFile = document.getElementById('inputFile');
 inputFile.addEventListener('change', getURI, false);
@@ -163,6 +158,17 @@ function resetInputField() {
     textarea.value = '';
 }
 
+function addPointToGraph(graphCoordinate, gpsCoordinate) {
+    let name = window.prompt('Building Name','main');
+    const gpsText = gpsCoordinate[latitudeIndex].toString() + ', ' + gpsCoordinate[longitudeIndex].toString();
+    let dataToAdd = {
+        x:[[graphCoordinate[xIndex]]],
+        y:[[graphCoordinate[yIndex]]],
+        text:[[gpsText]],
+    };
+    Plotly.extendTraces(Tester,dataToAdd, [1]);
+}
+
 const latitudeIndex = 0;
 const longitudeIndex = 1;
 const xIndex = 0;
@@ -172,21 +178,16 @@ function printCoordinates(numPoints) {
     window.alert('Number of data points: ' + numPoints + '\ngps coordinates: ' + gpsCoordinates + '\ngraph coordinates: ' + graphCoordinates + '\nPress Calibrate when ready.');
 }
 
-function addPointToGraph() {
-    // TODO: add code to add actual point to graph;
-    let name = window.prompt('Building Name','main');
-}
-
 function handleCoordinateInput() {
     let input = document.querySelector('textarea').value;
     if (validateCoordinateInput(input)) {
-        let coordinates = input.split(',');
-        coordinates.map((string) => parseFloat(string));
-        gpsCoordinates.push(coordinates);
+        let gpsInput = input.split(',');
+        gpsInput.map((string) => parseFloat(string));
+        gpsCoordinates.push(gpsInput);
         graphCoordinates.push(currentPoint);
         resetInputField();
+        addPointToGraph(currentPoint,gpsInput);
         printCoordinates(gpsCoordinates.length);
-        // addPointToGraph();
     } else {
         window.alert('invalid input');
     }
@@ -199,6 +200,13 @@ function handleDatapointClick() {
 }
 
 function getGraphCoordinates(data) {
+    // TODO: test which point will be clicked when a point on calibrate layer and background layer are very close;
+    for(let i=0; i < data.points.length; i++) {
+        let pn = data.points[i].pointNumber;
+        let tn = data.points[i].curveNumber;
+        console.log(pn+', trace number: ' + tn);
+    }
+    // actual code;
     currentPoint = [data.points[0].x.toFixed(6),data.points[0].y.toFixed(6)];
     window.alert('x: ' + data.points[0].x.toFixed(6) + '; y: ' + data.points[0].y.toFixed(6) +
         '\nPlease enter GPS coordinates for this point below to continue.');
