@@ -160,7 +160,7 @@ function resetInputField() {
 
 function addPointToGraph(graphCoordinate, gpsCoordinate) {
     let name = window.prompt('Building Name','main');
-    const gpsText = gpsCoordinate[latitudeIndex].toString() + ', ' + gpsCoordinate[longitudeIndex].toString();
+    const gpsText = name + ": " + gpsCoordinate[latitudeIndex].toString() + ', ' + gpsCoordinate[longitudeIndex].toString();
     let dataToAdd = {
         x:[[graphCoordinate[xIndex]]],
         y:[[graphCoordinate[yIndex]]],
