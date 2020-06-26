@@ -1,7 +1,6 @@
 # Plot.ly_auto-calibration_map
 The demo is an auto-calibration from GPS coordinates to map scale, developed on top of Plot.ly in JavaScript.
-
-A temporary test ground before integrating into [Open Energy Dashboard](https://github.com/OpenEnergyDashboard/OED).
+A more complete version of this feature is being incorporated into [Open Energy Dashboard](https://github.com/OpenEnergyDashboard/OED) through a forked [mapChart](https://github.com/ak476519/OED/tree/mapChart) branch.
 
 Since Plot.ly only accepts url or data uri strings as image source, images used for this demo are converted to data uri stored in a .txt file under the same name as the image.
 
