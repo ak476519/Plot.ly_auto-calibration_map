@@ -34,6 +34,11 @@ let graphCoordinates = [];
 let gpsCoordinates = [];
 let currentPoint = [];
 
+const latitudeIndex = 0;
+const longitudeIndex = 1;
+const xIndex = 0;
+const yIndex = 1;
+
 const numPoints = 50;
 let x = [500];
 let y = [500];
@@ -68,7 +73,7 @@ function getURI() {
     fileReader.onload = function () {
         source = fileReader.result;
     };
-    fileReader.readAsText(this.files[0]);
+    fileReader.readAsDataURL(this.files[0]);
     notifyLoadComplete();
 }
 
@@ -79,13 +84,13 @@ function graph() {
         xaxis: {
             range: [0, 500], //range of displayed graph
             showgrid: false, // hide grid lines in graph
-            zeroline: true,
+            zeroline: false,
             showticklabels: false // hide numbers on zeroline
         },
         yaxis: {
             range: [0, 500],
             showgrid: false,
-            zeroline: true,
+            zeroline: false,
             showticklabels: false,
             scaleanchor:'x',
         },
@@ -134,7 +139,7 @@ function createBackgroundGrid() {
         colorscale: [['0.0', 'rgba(0,0,0,0.97)'], ['1.0', 'rgb(255, 255, 255, 0.5)']],
         xgap: 1,
         ygap: 1,
-        hoverinfo: 'x',
+        hoverinfo: 'all',
         showscale: false
     };
     return trace;
@@ -168,11 +173,6 @@ function addPointToGraph(graphCoordinate, gpsCoordinate) {
     };
     Plotly.extendTraces(Tester,dataToAdd, [1]);
 }
-
-const latitudeIndex = 0;
-const longitudeIndex = 1;
-const xIndex = 0;
-const yIndex = 1;
 
 function printCoordinates(numPoints) {
     window.alert('Number of data points: ' + numPoints + '\ngps coordinates: ' + gpsCoordinates + '\ngraph coordinates: ' + graphCoordinates + '\nPress Calibrate when ready.');
